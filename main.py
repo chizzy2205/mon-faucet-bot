@@ -102,7 +102,7 @@ async def faucet(interaction: discord.Interaction, address: str):
 
     # ✅ Send success or failure message
     if tx_transfer:
-        await interaction.followup.send(f"✅ Faucet success! Try again in 24 hours! \n Transaction Hash: {EXPLORER}tx/{tx_transfer}")
+        await interaction.followup.send(f"✅ Faucet success! Try again in 10 seconds! \n Transaction Hash: {EXPLORER}tx/{tx_transfer}")
     else:
         await interaction.followup.send("❌ Transaction failed. Try again later.", ephemeral=True)
 
