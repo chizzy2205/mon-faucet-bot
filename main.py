@@ -14,8 +14,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 RPC_URL = "https://testnet-rpc.monad.xyz/"  # Update with the correct Monad RPC URL
 web3 = Web3(Web3.HTTPProvider(RPC_URL))
 
-MAIN_ADD = "0xAed564DE081a503C6c1BCE038E1b0D2112C8b3F2"  # Replace with your faucet wallet address
-MAIN_PK = "bc04d660c4e5ef51f3f8956b2a539027aeb8fa7ce0e90379c52bcf62a76583d7"  # Replace with your private key (KEEP THIS SAFE!)
+MAIN_ADD = "0xeda2077037706d98624E976B6bDf2512d01898f4"  # Replace with your faucet wallet address
+MAIN_PK = "12f4a660e1dc74fa1074321c987c781fd9b2141500f7f139f3e95b0c395258d6"  # Replace with your private key (KEEP THIS SAFE!)
 EXPLORER = "https://testnet.monadexplorer.com/"
 
 # Function to send transaction
@@ -74,7 +74,7 @@ async def faucet(interaction: discord.Interaction, address: str):
     except (FileNotFoundError, json.JSONDecodeError):
         data = []
 
-    # ✅ Cooldown check (10 sec for testing, use 86400 for 24h)
+    # ✅ Cooldown check (24 hours = 86400 seconds)
     user_id = user.id
     now = int(datetime.datetime.now(timezone.utc).timestamp())  # ✅ Fixed deprecated utcnow()
     user_record = next((entry for entry in data if entry["userId"] == user_id), None)
@@ -82,9 +82,21 @@ async def faucet(interaction: discord.Interaction, address: str):
     if user_record:
         last_faucet_time = user_record["timeFaucet"]
         elapsed_time = now - last_faucet_time
-        if elapsed_time < 10:  # Change to 86400 for 24-hour cooldown
-            remaining_time = 10 - elapsed_time
-            await interaction.followup.send(f"⏳ Try again in {int(remaining_time)} seconds.", ephemeral=True)
+
+        if elapsed_time < 86400:  # 24-hour cooldown
+            remaining_time = 86400 - elapsed_time
+            hours = remaining_time // 3600
+            minutes = (remaining_time % 3600) // 60
+            seconds = remaining_time % 60
+
+            if hours > 0:
+                time_str = f"{hours} hours"
+            elif minutes > 0:
+                time_str = f"{minutes} minutes"
+            else:
+                time_str = f"{seconds} seconds"
+
+            await interaction.followup.send(f"⏳ Try again in {time_str}.", ephemeral=True)
             return
 
     # ✅ Update logs
@@ -102,7 +114,7 @@ async def faucet(interaction: discord.Interaction, address: str):
 
     # ✅ Send success or failure message
     if tx_transfer:
-        await interaction.followup.send(f"✅ Faucet success!\n Transaction Hash: {EXPLORER}tx/{tx_transfer}")
+        await interaction.followup.send(f"✅ Faucet success!\n Try again in 24 hours \n Transaction Hash: {EXPLORER}tx/{tx_transfer}")
     else:
         await interaction.followup.send("❌ Transaction failed. Try again later.", ephemeral=True)
 
